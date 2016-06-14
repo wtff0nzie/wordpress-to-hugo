@@ -1,0 +1,23 @@
+{
+  "name": 			        "Wordpress-to-markdown",
+  "description": 		    "Reduce Wordpress to MD",
+  "sitemap":                 "https://www.taxamo.com/sitemap.xml",
+  "scripts": {
+    "start":				"node server"
+  },
+  "version":			    "0.0.1",
+  "engines": {
+    "node":					"6"
+  },
+  "dependencies": {
+    "cheerio":              "*",
+    "cuid":                 "*",
+    "cookies":              "*",
+    "request":              "*",
+    "ua-list":              "*",
+    "unidecode":            "*",
+    "upndown":              ">=2",
+    "tough-cookie":         "*",
+    "xml2json":             "*"
+  }
+}
