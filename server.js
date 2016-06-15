@@ -1,6 +1,6 @@
 /**
  * @license
- * lodash <https://lodash.com/>
+ * wordpress-to-markdown (https://github.com/wtff0nzie/wordpress-to-markdown)
  * Copyright Dez Iddon and other contributors
  * Released under MIT license
  */
@@ -60,7 +60,6 @@ let discoverMeta = (page) => {
     page.title = $(config.selectors.title).text();
     page.published = $(config.selectors.published).attr('content');
     page.description = $(config.selectors.description).attr('content');
-
     page.content = $(config.selectors.content).html();
 
     // Extract post specific tags
@@ -76,7 +75,7 @@ let discoverMeta = (page) => {
     page.tags = pageTags;
     page.categories = pageCategories;
 
-    $ = null;
+    $ = undefined;
 };
 
 
@@ -97,6 +96,7 @@ let genHugoMeta = (page) => {
             hugoMeta += '   - "' + tag + '"\n';
         });
         hugoMeta += '---\n';
+
         return hugoMeta;
     }
     return "";

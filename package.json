@@ -2,7 +2,7 @@
   "name": 			        "Wordpress-to-markdown",
   "description": 		    "Reduce Wordpress to MarkDown",
   "settings": {
-    "sitemap":              "https://www.taxamo.com/sitemap.xml",
+    "sitemap":              "https://www.somesite.com/sitemap.xml",
     "excludePaths": [
                             "/category/",
                             "/tag/"
