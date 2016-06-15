@@ -1,7 +1,24 @@
 {
   "name": 			        "Wordpress-to-markdown",
-  "description": 		    "Reduce Wordpress to MD",
-  "sitemap":                 "https://www.taxamo.com/sitemap.xml",
+  "description": 		    "Reduce Wordpress to MarkDown",
+  "settings": {
+    "sitemap":              "https://www.taxamo.com/sitemap.xml",
+    "excludePaths": [
+                            "/category/",
+                            "/tag/"
+    ],
+    "selectors": {
+      "title":              ".section-title h1",
+      "description":         "meta[name='description']",
+      "published":          "meta[property='article:published_time']",
+      "content":            ".section-content",
+      "tags":               ".section-content .post-tags a[rel='tag']",
+      "categories":         ".section-title .post-categories a",
+      "excluded":           ".section-content .row > .col-md-3"
+    },
+    "addHugoMetaData":      "true",
+    "fetchInterval":        "3000"
+  },
   "scripts": {
     "start":				"node server"
   },
