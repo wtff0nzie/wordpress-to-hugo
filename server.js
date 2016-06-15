@@ -122,18 +122,20 @@ let toMarkdown = (page) => {
 
 
 // Recursively build directories
-let buildPath = (path) => {
-    let dirs = path.split('/'),
-        currentPath = './extracts';
+let buildPath = (...paths) => {
+    paths.forEach((path) => {
+        let dirs = path.split('/'),
+            currentPath = './extracts';
 
-    dirs.pop();
+        dirs.pop();
 
-    dirs.forEach((dir) => {
-        currentPath += '/' + dir;
+        dirs.forEach((dir) => {
+            currentPath += '/' + dir;
 
-        if (!fs.existsSync(currentPath)) {
-            fs.mkdirSync(currentPath);
-        }
+            if (!fs.existsSync(currentPath)) {
+                fs.mkdirSync(currentPath);
+            }
+        });
     });
 };
 
@@ -141,36 +143,25 @@ let buildPath = (path) => {
 // Persist markdown to disk
 let saveToDisk = (page) => {
     let uri = url.parse(page.URL),
-        path = uri.path;
+        path = uri.path,
+        writeConfig = {};
 
     if (path.slice(-1) === '/') {
         path += 'index.md';
     }
 
-    buildPath('md' + path);
-    buildPath('raw' + path);
+    writeConfig['./extracts/md' + path] = page.markdown;
+    writeConfig['./extracts/raw' + path.replace('.md', '.json')] = JSON.stringify(page);
 
-    fs.writeFile('./extracts/md' + path, page.markdown, (err) => {
-        if (err) {
-            console.log('Could not save ' + path);
-            console.log(err);
-        }
-    });
+    buildPath('md' + path, 'raw' + path);
 
-    fs.writeFile('./extracts/raw' + path.replace('.md', '.json'), JSON.stringify(page), (err) => {
-        if (err) {
-            console.log('Could not save ' + path);
-            console.log(err);
-        }
-    });
-
-    return;
-
-    fs.writeFile('/extracts/md' + path, page.markdown, function (err){
-        if (err) {
-            console.log('Could not save ' + path);
-            console.log(err);
-        }
+    Object.keys(writeConfig).forEach((key) => {
+        fs.writeFile(key, writeConfig[key], (err) => {
+            if (err) {
+                console.log('Could not save ' + key);
+                console.log(err);
+            }
+        });
     });
 };
 
@@ -187,8 +178,6 @@ request(config.sitemap, (err, response, body) => {
     sitemap = JSON.parse(xml2json.toJson(body));
 
     // Spider links
-    fetchPage('https://www.taxamo.com/2015-vat-changes/');
-    return;
     sitemap.urlset.url.forEach((link, index) => {
         setTimeout(() => {
             fetchPage(link.loc);
