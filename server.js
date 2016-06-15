@@ -75,6 +75,8 @@ let discoverMeta = (page) => {
     page.tags = pageTags;
     page.categories = pageCategories;
 
+    extractImages(page);
+
     $ = undefined;
 };
 
@@ -100,6 +102,27 @@ let genHugoMeta = (page) => {
         return hugoMeta;
     }
     return "";
+};
+
+
+// Grab any images in the sys
+let extractImages = (page) => {
+    let $ = cheerio.load(page.markup);
+
+    buildPath('img');
+
+    $(config.selectors.content + ' img').each((index, img) => {
+        let path = $(img).attr('src'),
+            parsedPath = url.parse(path).path.split('/'),
+            fileName = parsedPath[parsedPath.length - 1];
+
+        request
+            .get(path)
+            .on('error', function(err) {
+                console.log(err)
+            })
+            .pipe(fs.createWriteStream('./extracts/img/' + fileName));
+    });
 };
 
 
