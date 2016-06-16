@@ -13,7 +13,8 @@ const config = require('./package.json').settings,
     cheerio = require('cheerio'),
     upndown = require('upndown'),
     url = require('url'),
-    fs = require('fs');
+    fs = require('fs'),
+    baseHref = url.parse(config.sitemap);
 
 
 // Fetch a page
@@ -116,9 +117,16 @@ let extractImages = (page) => {
             parsedPath = url.parse(path).path.split('/'),
             fileName = parsedPath[parsedPath.length - 1];
 
+        // plump out relative URIs
+        path = url.parse(path);
+        if (!path.host) {
+            path.href = baseHref.protocol + '//' + baseHref.host + path.href;
+        }
+
         request
-            .get(path)
+            .get(path.href)
             .on('error', function(err) {
+                console.log('Error recovering ' + path.href)
                 console.log(err)
             })
             .pipe(fs.createWriteStream('./extracts/img/' + fileName));

@@ -2,7 +2,7 @@
   "name": 			        "Wordpress-to-markdown",
   "description": 		    "Reduce Wordpress to MarkDown",
   "settings": {
-    "sitemap":              "https://www.somesite.com/sitemap.xml",
+    "sitemap":              "https://www.somewebsite.com/sitemap.xml",
     "excludePaths": [
                             "/category/",
                             "/tag/"
@@ -11,7 +11,7 @@
       "title":              ".section-title h1",
       "description":         "meta[name='description']",
       "published":          "meta[property='article:published_time']",
-      "content":            ".section-content",
+      "content":            ".section-content .blog-content",
       "tags":               ".section-content .post-tags a[rel='tag']",
       "categories":         ".section-title .post-categories a",
       "excluded":           ".section-content .row > .col-md-3"
