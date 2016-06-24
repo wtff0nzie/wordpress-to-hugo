@@ -8,13 +8,30 @@
 'use strict';
 
 const config = require('./package.json').settings,
+    massager = require('./massager'),
     xml2json = require('xml2json'),
     request = require('request'),
     cheerio = require('cheerio'),
     upndown = require('upndown'),
     url = require('url'),
     fs = require('fs'),
-    baseHref = url.parse(config.sitemap);
+    baseHref = url.parse(config.sitemap),
+    failRequests = [];
+
+
+// Write errors
+let writeFetchErrs = (errPath) => {
+    if (errPath) {
+        console.error('ERR: ' + errPath);
+        failRequests.push(errPath);
+    }
+
+    fs.writeFile('./extracts/err.json', failRequests.join('\n'), (err) => {
+        if (err) {
+            console.log('Could not save error log. Funny huh!');
+        }
+    });
+};
 
 
 // Fetch a page
@@ -24,8 +41,8 @@ let fetchPage = (URL) => {
             markup      : '',
             markdown    : ''
         },
-        skip = false,
-        uri = url.parse(URL);
+        uri = url.parse(URL),
+        skip = false;
 
     // Is this portion of the site on the skip list?
     config.excludePaths.forEach((excludeURL) => {
@@ -90,6 +107,10 @@ let genHugoMeta = (page) => {
         hugoMeta += 'title: "' + page.title + '"\n';
         hugoMeta += 'description: "' + page.description + '"\n';
         hugoMeta += 'date: "' + page.published + '"\n';
+        hugoMeta += 'pageclasses: "page-inner-page page-blog"\n';
+        hugoMeta += 'css: "<link rel=\'stylesheet\' href=\'/media/css/critical-inner-page.css\'>"\n';
+        hugoMeta += 'aliases:\n';
+        hugoMeta += '    - "' + url.parse(page.URL).path + '"\n';
         hugoMeta += 'categories:\n';
         page.categories.forEach((category) => {
             hugoMeta += '   - "' + category + '"\n';
@@ -102,7 +123,7 @@ let genHugoMeta = (page) => {
 
         return hugoMeta;
     }
-    return "";
+    return '';
 };
 
 
@@ -126,8 +147,7 @@ let extractImages = (page) => {
         request
             .get(path.href)
             .on('error', function(err) {
-                console.log('Error recovering ' + path.href)
-                console.log(err)
+                writeFetchErrs(path.href);
             })
             .pipe(fs.createWriteStream('./extracts/img/' + fileName));
     });
@@ -136,18 +156,25 @@ let extractImages = (page) => {
 
 // Convert page to markdown
 let toMarkdown = (page) => {
-    let und = new upndown();
-
+    // Pull any meta data
     discoverMeta(page);
 
-    und.convert(page.content, (err, markdown) => {
+    // Pre-markdown cleanup
+    massager(page.content, (err, content) => {
+        let und = new upndown();
+
         if (err) {
-            console.log('Could not convert to MD');
-            return console.err(err);
+            return writeFetchErrs(err);
         }
 
-        page.markdown = genHugoMeta(page) + markdown;
-        saveToDisk(page);
+        und.convert(content, (err, markdown) => {
+            if (err) {
+                return writeFetchErrs('Could not convert "' + page.URL + '" to MD');
+            }
+
+            page.markdown = genHugoMeta(page) + markdown;
+            saveToDisk(page);
+        });
     });
 };
 
@@ -178,7 +205,7 @@ let saveToDisk = (page) => {
         writeConfig = {};
 
     if (path.slice(-1) === '/') {
-        path += 'index.md';
+        path = path.substr(0, path.length - 1) + '.md';
     }
 
     writeConfig['./extracts/md' + path] = page.markdown;
@@ -189,8 +216,7 @@ let saveToDisk = (page) => {
     Object.keys(writeConfig).forEach((key) => {
         fs.writeFile(key, writeConfig[key], (err) => {
             if (err) {
-                console.log('Could not save ' + key);
-                console.log(err);
+                writeFetchErrs(page.URL);
             }
         });
     });
@@ -211,7 +237,11 @@ request(config.sitemap, (err, response, body) => {
     // Spider links
     sitemap.urlset.url.forEach((link, index) => {
         setTimeout(() => {
-            fetchPage(link.loc);
+            try {
+                fetchPage(link.loc);
+            } catch (evt) {
+                console.log(evt);
+            }
         }, index * parseInt(config.fetchInterval, 10));
     });
 });
