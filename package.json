@@ -2,7 +2,7 @@
   "name": 			        "Wordpress-to-markdown",
   "description": 		    "Reduce Wordpress to MarkDown",
   "settings": {
-    "sitemap":              "https://www.taxamo.com/sitemap.xml",
+    "sitemap":              "https://www.website.com/post-sitemap.xml",
     "excludePaths": [
                             "/category/",
                             "/tag/"
@@ -17,7 +17,7 @@
       "excluded":           ".section-content .row > .col-md-3"
     },
     "addHugoMetaData":      "true",
-    "fetchInterval":        "3000"
+    "fetchInterval":        "1000"
   },
   "scripts": {
     "start":				"node server"
@@ -35,11 +35,8 @@
   ],
   "dependencies": {
     "cheerio":              "*",
-    "cuid":                 "*",
-    "cookies":              "*",
     "request":              "*",
     "ua-list":              "*",
-    "unidecode":            "*",
     "upndown":              ">=2",
     "tough-cookie":         "*",
     "xml2json":             "*"

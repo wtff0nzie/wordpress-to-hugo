@@ -14,8 +14,8 @@ const config = require('./package.json').settings,
     cheerio = require('cheerio'),
     upndown = require('upndown'),
     url = require('url'),
-    fs = require('fs'),
     baseHref = url.parse(config.sitemap),
+    fs = require('fs'),
     failRequests = [];
 
 
@@ -28,7 +28,7 @@ let writeFetchErrs = (errPath) => {
 
     fs.writeFile('./extracts/err.json', failRequests.join('\n'), (err) => {
         if (err) {
-            console.log('Could not save error log. Funny huh!');
+            console.log('Could not save error log. Funny huh! ' + err);
         }
     });
 };
@@ -60,7 +60,7 @@ let fetchPage = (URL) => {
     // Grab page, begin the transformation (MUHAHHAHAHAHAHAHA *THUNDER CLAP*)
     request(URL, (err, response, body) => {
         if (err || response.statusCode !== 200) {
-            return console.log(err);
+            return writeFetchErrs(URL);
         }
 
         page.markup = body;
@@ -127,7 +127,7 @@ let genHugoMeta = (page) => {
 };
 
 
-// Grab any images in the sys
+// Grab images
 let extractImages = (page) => {
     let $ = cheerio.load(page.markup);
 
@@ -146,7 +146,7 @@ let extractImages = (page) => {
 
         request
             .get(path.href)
-            .on('error', function(err) {
+            .on('error', (err) => {
                 writeFetchErrs(path.href);
             })
             .pipe(fs.createWriteStream('./extracts/img/' + fileName));
